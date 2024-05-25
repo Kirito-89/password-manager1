@@ -11,7 +11,7 @@ function App() {
   return (
     <>
       <Navbar/>
-      <div className="min-h-[87vh]">
+      <div className="min-h-screen">
 
       <Manager/>
       </div>
