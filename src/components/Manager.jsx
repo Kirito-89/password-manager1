@@ -15,12 +15,28 @@ const Manager = () => {
     const handleChange = (e) => {
         setform({ ...form, [e.target.name]: e.target.value })
     }
-    useEffect(() => {
-        let passwords = localStorage.getItem("passwords")
-        let passwordArray;
-        if (passwords) {
-            setpasswordArray(JSON.parse(passwords))
+    const getPassword=async () => {
+        try {
+            let req= await fetch("http://localhost:3000/")
+            let passwords=await req.json()
+            
+                setpasswordArray(passwords)
+                console.log(passwords)
+        } catch (error) {
+            console.log(error)
         }
+       
+        
+    }
+    
+    useEffect(() => {
+        // let passwords = localStorage.getItem("passwords")
+        // let req=fetch()
+        getPassword()
+        // let passwordArray;
+        // if (passwords) {
+        //     setpasswordArray(JSON.parse(passwords))
+        // }
     }, [])
 
     const copytext = (text) => {
@@ -38,12 +54,34 @@ const Manager = () => {
     }
 
 
-    const savePassword = () => {
+    const savePassword =async () => {
         // console.log(form)
         if(form.site.length>3 && form.username.length>3 && form.password.length>3){
         setpasswordArray([...passwordArray, { ...form, id: uuidv4() }])
-        localStorage.setItem("passwords", JSON.stringify([...passwordArray, { ...form, id: uuidv4() }]))
-        console.log([...passwordArray, form])
+        await fetch("http://localhost:3000/",{
+                method: "DELETE", // *GET, POST, PUT, DELETE, etc.
+                
+                headers: {
+                  "Content-Type": "application/json",
+                  // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                // redirect: "follow", // manual, *follow, error
+                // referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify({id: form.id }), // body data type must match "Content-Type" header
+              })
+         await fetch("http://localhost:3000/",{
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            
+            headers: {
+              "Content-Type": "application/json",
+              // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            // redirect: "follow", // manual, *follow, error
+            // referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify({ ...form, id: uuidv4() }), // body data type must match "Content-Type" header
+          })
+        // localStorage.setItem("passwords", JSON.stringify([...passwordArray, { ...form, id: uuidv4() }]))
+        // console.log([...passwordArray, form])
         setform({ site: "", username: "", password: "" })
         toast('Password saved successfully!', {
             position: "top-right",
@@ -69,13 +107,24 @@ const Manager = () => {
         });
     }
     }
-    const deletePassword = (id) => {
+    const deletePassword =async (id) => {
         // console.log(form)
         let c = confirm("Do you wnat to delete the post?");
         if (c) {
 
             setpasswordArray(passwordArray.filter((item => item.id !== id)))
-            localStorage.setItem("passwords", JSON.stringify(passwordArray.filter((item => item.id !== id))))
+            // localStorage.setItem("passwords", JSON.stringify(passwordArray.filter((item => item.id !== id))))
+            let res=await fetch("http://localhost:3000/",{
+                method: "DELETE", // *GET, POST, PUT, DELETE, etc.
+                
+                headers: {
+                  "Content-Type": "application/json",
+                  // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                // redirect: "follow", // manual, *follow, error
+                // referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify({ id }), // body data type must match "Content-Type" header
+              })
             toast('password deleted successfully!', {
                 position: "top-right",
                 autoClose: 5000,
@@ -89,7 +138,7 @@ const Manager = () => {
         }
     }
     const editPassword = (id) => {
-        setform(passwordArray.filter(i => i.id === id)[0])
+        setform({...passwordArray.filter(i => i.id === id)[0],id:id})
         setpasswordArray(passwordArray.filter((item => item.id !== id)))
     }
 
@@ -131,6 +180,7 @@ const Manager = () => {
                     Pass
                     <span className="text-green-700 font-bold ">OP/&gt;</span></h1>
                 <p className='text-green-900 text-lg text-center'>Your own password manager</p>
+                
                 <div className=" flex flex-col p-4 text-black gap-8 items-center">
                     <input value={form.site} onChange={handleChange} placeholder='Enter Website Url' className='rounded-full border border-green-500 w-full p-4 py-1' type="text" name="site" />
                     <div className="flex md:flex-row flex-col w-full gap-8">
@@ -149,6 +199,10 @@ const Manager = () => {
                             trigger="hover">
                         </lord-icon>Add password</button>
                 </div>
+
+
+
+
                 <div className="passwords">
                     <h2 className='font-bold text-2xl py-4'>Your Passwords</h2>
                     {passwordArray.length === 0 && <div>No passwords to display</div>}
@@ -196,7 +250,7 @@ const Manager = () => {
                                     <td className=' py-2 text-center'>
 
                                         <div className="flex items-center justify-center">
-                                            <span> {item.password}</span><div className="lordicon cursor-pointer size-7" onClick={() => { copytext(item.password) }}>
+                                            <span> {"*".repeat(item.password.length)}</span><div className="lordicon cursor-pointer size-7" onClick={() => { copytext(item.password) }}>
 
 
                                                 <lord-icon style={{ "width": "25px", "height": "25px" }}
