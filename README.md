@@ -39,6 +39,6 @@ Run the application:`
 `npm start`
 
 ## Usage
-![Preview](public\icons\1.png)
-![Preview](public\icons\2.png)
-![Preview](public\icons\3.png)
+![Preview](public/icons/1.png)
+![Preview](public/icons/2.png)
+![Preview](public/icons/3.png)
